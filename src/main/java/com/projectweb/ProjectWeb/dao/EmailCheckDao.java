@@ -1,6 +1,6 @@
 package com.projectweb.ProjectWeb.dao;
 
-import org.example.model.Email_Check_Entity;
+import  com.projectweb.ProjectWeb.model.Email_Check_Entity;
 import jakarta.persistence.*;
 import java.util.List;
 

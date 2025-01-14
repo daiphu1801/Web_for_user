@@ -1,6 +1,6 @@
 package com.projectweb.ProjectWeb.dao;
 
-import org.example.model.Import_Entity;
+import  com.projectweb.ProjectWeb.model.Import_Entity;
 import jakarta.persistence.*;
 import jakarta.persistence.criteria.*;
 

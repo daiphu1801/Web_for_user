@@ -2,7 +2,6 @@ package com.projectweb.ProjectWeb.service;
 
 import com.projectweb.ProjectWeb.dao.UserDao;
 import com.projectweb.ProjectWeb.model.User_Entity;
-import com.projectweb.ProjectWeb.service.SecurityFunction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,10 +11,12 @@ import java.time.LocalDateTime;
 public class UserService {
 
     private final UserDao userDao;
+    private final SecurityFunction securityFunction;
 
     @Autowired
-    public UserService(UserDao userDao) {
+    public UserService(UserDao userDao, SecurityFunction securityFunction) {
         this.userDao = userDao;
+        this.securityFunction = securityFunction;
     }
 
     public User_Entity getUsersByID(String id) {
@@ -23,57 +24,94 @@ public class UserService {
     }
 
     public User_Entity getUsersByEmail(String email) {
-        return userDao.getUsersByMail(SecurityFunction.encrypt(email));
-    }
-
-    public void registerNewUser(User_Entity user) throws Exception {
-        String salt = SecurityFunction.generateSalt();
-        user.setSALT(salt);
-        String pass = user.getPASSWORD_ACC() + salt;
-        pass = SecurityFunction.hashString(pass);
-        user.setPASSWORD_ACC(pass);
-        user.setID_USER(SecurityFunction.hashString(user.getEMAIL_ACC()));
-        LocalDateTime dateJoin = LocalDateTime.now();
-        user.setDATE_JOIN(dateJoin);
-        encryptUserSensitiveData(user);
-        userDao.createUser(user);
-    }
-
-    public boolean login(String email, String password) throws Exception {
-        String mail = SecurityFunction.encrypt(email);
-        if (userDao.isUserByMail(mail)) {
-            password += userDao.getUsersByMail(mail).getSALT();
-            password = SecurityFunction.hashString(password);
-            return userDao.loginValidate(mail, password);
+        try {
+            String encryptedEmail = securityFunction.encrypt(email);
+            return userDao.getUsersByMail(encryptedEmail);
+        } catch (RuntimeException e) {
+            throw new RuntimeException("Error getting user by email", e);
         }
-        return false;
     }
 
-    public void updateUserInfo(User_Entity user) throws Exception {
-        encryptUserSensitiveData(user);
-        userDao.updateUser(
-                user.getID_USER(),
-                user.getADDRESS(),
-                user.getEMAIL_ACC(),
-                user.getPHONE_ACC(),
-                user.getROLE_ACC(),
-                user.getNAME_USER()
-        );
-    }
+    public User_Entity registerNewUser(User_Entity user) {
+        try {
+            // Generate salt and hash password
+            String salt = securityFunction.generateSalt();
+            user.setSALT(salt);
+            String pass = user.getPASSWORD_ACC() + salt;
+            pass = securityFunction.hashString(pass);
+            user.setPASSWORD_ACC(pass);
 
-    public void changePassword(String email, String newPassword) throws Exception {
-        userDao.changePasswordByEmail(SecurityFunction.encrypt(email), newPassword);
-    }
+            // Generate user ID and set join date
+            user.setID_USER(securityFunction.hashString(user.getEMAIL_ACC()));
+            LocalDateTime dateJoin = LocalDateTime.now();
+            user.setDATE_JOIN(dateJoin);
 
-    public void encryptUserSensitiveData(User_Entity user) throws Exception {
-        if (user.getADDRESS() != null) {
-            user.setADDRESS(SecurityFunction.encrypt(user.getADDRESS()));
+            // Encrypt sensitive user data
+            encryptUserSensitiveData(user);
+
+            // Save user to the database
+            userDao.createUser(user);
+            return user;
+        } catch (RuntimeException e) {
+            throw new RuntimeException("Error while registering new user", e);
         }
-        if (user.getPHONE_ACC() != null) {
-            user.setPHONE_ACC(SecurityFunction.encrypt(user.getPHONE_ACC()));
+    }
+
+    public boolean login(String email, String password) {
+        try {
+            String encryptedEmail = securityFunction.encrypt(email);
+            if (userDao.isUserByMail(encryptedEmail)) {
+                String salt = userDao.getUsersByMail(encryptedEmail).getSALT();
+                password = securityFunction.hashString(password + salt);
+                return userDao.loginValidate(encryptedEmail, password);
+            }
+            return false;
+        } catch (RuntimeException e) {
+            throw new RuntimeException("Login failed", e);
         }
-        if (user.getEMAIL_ACC() != null) {
-            user.setEMAIL_ACC(SecurityFunction.encrypt(user.getEMAIL_ACC()));
+    }
+
+    public void updateUserInfo(User_Entity user) {
+        try {
+            // Encrypt sensitive data
+            encryptUserSensitiveData(user);
+
+            // Update user information
+            userDao.updateUser(
+                    user.getID_USER(),
+                    user.getADDRESS(),
+                    user.getEMAIL_ACC(),
+                    user.getPHONE_ACC(),
+                    user.getROLE_ACC(),
+                    user.getNAME_USER()
+            );
+        } catch (RuntimeException e) {
+            throw new RuntimeException("Error updating user information", e);
+        }
+    }
+
+    public void changePassword(String email, String newPassword) {
+        try {
+            String encryptedEmail = securityFunction.encrypt(email);
+            userDao.changePasswordByEmail(encryptedEmail, newPassword);
+        } catch (RuntimeException e) {
+            throw new RuntimeException("Error changing password", e);
+        }
+    }
+
+    private void encryptUserSensitiveData(User_Entity user) {
+        try {
+            if (user.getADDRESS() != null) {
+                user.setADDRESS(securityFunction.encrypt(user.getADDRESS()));
+            }
+            if (user.getPHONE_ACC() != null) {
+                user.setPHONE_ACC(securityFunction.encrypt(user.getPHONE_ACC()));
+            }
+            if (user.getEMAIL_ACC() != null) {
+                user.setEMAIL_ACC(securityFunction.encrypt(user.getEMAIL_ACC()));
+            }
+        } catch (RuntimeException e) {
+            throw new RuntimeException("Error encrypting user sensitive data", e);
         }
     }
 }

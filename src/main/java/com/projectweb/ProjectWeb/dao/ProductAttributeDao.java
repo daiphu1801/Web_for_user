@@ -1,7 +1,7 @@
 package com.projectweb.ProjectWeb.dao;
 
-import org.example.model.Category_Entity;
-import org.example.model.Product_Attribute_Entity;
+import com.projectweb.ProjectWeb.model.Category_Entity;
+import com.projectweb.ProjectWeb.model.Product_Attribute_Entity;
 import jakarta.persistence.*;
 import jakarta.persistence.criteria.*;
 

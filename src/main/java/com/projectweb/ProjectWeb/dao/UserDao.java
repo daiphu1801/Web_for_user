@@ -2,6 +2,7 @@ package com.projectweb.ProjectWeb.dao;
 
 import com.projectweb.ProjectWeb.model.User_Entity;
 import com.projectweb.ProjectWeb.service.SecurityFunction;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -9,7 +10,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 @Transactional
@@ -17,6 +17,13 @@ public class UserDao {
 
     @PersistenceContext
     private EntityManager entityManager;
+
+    private final SecurityFunction securityFunction;
+
+    @Autowired
+    public UserDao(SecurityFunction securityFunction) {
+        this.securityFunction = securityFunction;
+    }
 
     public void createUser(User_Entity user) {
         try {
@@ -96,9 +103,9 @@ public class UserDao {
                 new RuntimeException("User not found with email: " + email)
         );
 
-        String newSalt = SecurityFunction.generateSalt();
+        String newSalt = securityFunction.generateSalt();
         user.setSALT(newSalt);
-        String hashedPassword = SecurityFunction.hashString(newPassword + newSalt);
+        String hashedPassword = securityFunction.hashString(newPassword + newSalt);
         user.setPASSWORD_ACC(hashedPassword);
         entityManager.merge(user);
     }

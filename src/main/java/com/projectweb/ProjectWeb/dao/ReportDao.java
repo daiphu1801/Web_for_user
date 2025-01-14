@@ -1,7 +1,7 @@
 package com.projectweb.ProjectWeb.dao;
 
-import org.example.model.*;
-import org.example.model.EnumType;
+import com.projectweb.ProjectWeb.model.*;
+import com.projectweb.ProjectWeb.model.EnumType;
 import jakarta.persistence.*;
 import jakarta.persistence.criteria.*;
 

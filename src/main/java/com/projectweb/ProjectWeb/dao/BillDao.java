@@ -1,8 +1,8 @@
 package com.projectweb.ProjectWeb.dao;
 
-import org.example.model.Bill_Entity;
-import org.example.model.User_Entity;
-import org.example.model.EnumType.Status_Bill;
+import com.projectweb.ProjectWeb.model.Bill_Entity;
+import com.projectweb.ProjectWeb.model.User_Entity;
+import com.projectweb.ProjectWeb.model.EnumType.Status_Bill;
 
 import jakarta.persistence.*;
 import jakarta.persistence.criteria.*;

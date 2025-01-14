@@ -1,8 +1,8 @@
 package com.projectweb.ProjectWeb.dao;
 
-import org.example.model.Brand_Entity;
-import org.example.model.Category_Entity;
-import org.example.model.Product_Base_Entity;
+import com.projectweb.ProjectWeb.model.Brand_Entity;
+import com.projectweb.ProjectWeb.model.Category_Entity;
+import com.projectweb.ProjectWeb.model.Product_Base_Entity;
 import jakarta.persistence.*;
 import jakarta.persistence.criteria.*;
 
