@@ -11,16 +11,16 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
-import com.projectweb.ProjectWeb.models.User;
-import com.projectweb.ProjectWeb.services.userService;
+import com.projectweb.ProjectWeb.model.User_Entity;
+import com.projectweb.ProjectWeb.service.UserService;
 
 @Configuration
 public class SecurityConfiguration {
 	
 	userService UserService;
 
-	public SecurityConfiguration(userService UserService) {
-		this.UserService = UserService;
+	public SecurityConfiguration(UserService userService) {
+		this.userService = UserService;
 	}
 
 	@Configuration
