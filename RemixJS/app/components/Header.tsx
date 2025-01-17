@@ -9,7 +9,7 @@ interface Product {
 
 export default function Header() {
   const [menu, setMenu] = useState<boolean>(false);
-  const guest = true;
+  const guest = false;
   const showAlert = () => {
     alert("Please Log In To Continue!")
   };
@@ -18,7 +18,7 @@ export default function Header() {
   return (
     <header className="w-full h-20 text-white bg-slate-950 border-b border-white flex fixed z-50">
       <Link to="/" className="w-2/12 flex justify-center items-center">
-        <img src="app/IMG/DKKP.png" alt="DKKP" className="h-full" />
+        <img src="app/IMG/DKKP_00.png" alt="DKKP" className="h-full" />
       </Link>
       <div className="w-1/12">
         <div className="h-full flex justify-center items-center hover:text-purple-500 anmt" onClick={() => setMenu(!menu)}>
