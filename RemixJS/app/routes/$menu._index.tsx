@@ -11,115 +11,28 @@ interface Product {
   disPrice?: number;
 }
 
-interface URL {
-  menu: string;
-}
-
-const Menu = [
-  "apple",
-  "samsung",
-  "xiaomi",
-  "huawei",
-  "oppo",
-  "acer",
-  "asus",
-  "dell",
-  "hp",
-  "msi",
-  "phone",
-  "laptop"
-];
-
 export const loader: LoaderFunction = async ({ params }) => {
-  const { menu } = params;
-
-  if (!menu || !Menu.includes(menu)) {
-    throw new Response("Not Found", { status: 404 });
+  try {
+    const { menu } = params;
+    const response = await axios.get<Product>(`http://localhost:8081/dkkp/menu.php?id=${menu}`);
+    const data: Product = response.data;
+    return new Response(JSON.stringify(data), {
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (error) {
+    return new Response(
+      JSON.stringify({ error: "Failed To Fetch Data!" }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
   }
-
-  return new Response(JSON.stringify({ menu }), {
-    headers: { "Content-Type": "application/json" },
-  });
 };
 
 export default function Brand() {
-  const { menu }: URL = useLoaderData();
+  const { data } = useLoaderData<Product>();
   const total = 100;
   const limit = 10;
   let page = 5;
-  const pd: Product[] = [
-    {
-      id: "dkkp",
-      img: "app/IMG/DKKP_00.png",
-      name: "DKKP",
-      price: 9000000,
-      discount: 10,
-    },
-    {
-      id: "dkkp",
-      img: "app/IMG/DKKP_00.png",
-      name: "DKKP",
-      price: 9000000,
-      discount: 20,
-    },
-    {
-      id: "dkkp",
-      img: "app/IMG/DKKP_00.png",
-      name: "DKKP",
-      price: 9000000,
-      discount: 40,
-    },
-    {
-      id: "dkkp",
-      img: "app/IMG/DKKP_00.png",
-      name: "DKKP",
-      price: 9000000,
-      discount: 20,
-    },
-    {
-      id: "dkkp",
-      img: "app/IMG/DKKP_00.png",
-      name: "DKKP",
-      price: 9000000,
-      discount: 10,
-    },
-    {
-      id: "dkkp",
-      img: "app/IMG/DKKP_00.png",
-      name: "DKKP",
-      price: 9000000,
-      discount: 5,
-    },
-    {
-      id: "dkkp",
-      img: "app/IMG/DKKP_00.png",
-      name: "DKKP",
-      price: 9000000,
-      discount: 10,
-    },
-    {
-      id: "dkkp",
-      img: "app/IMG/DKKP_00.png",
-      name: "DKKP",
-      price: 9000000,
-      discount: 20,
-    },
-    {
-      id: "dkkp",
-      img: "app/IMG/DKKP_00.png",
-      name: "DKKP",
-      price: 9000000,
-      discount: 40,
-    },
-    {
-      id: "dkkp",
-      img: "app/IMG/DKKP_00.png",
-      name: "DKKP",
-      price: 9000000,
-      discount: 20,
-    },
-  ];
-  pd.forEach((item) => {
+  data.forEach((item: any) => {
     item.disPrice = item.price * (1 - item.discount / 100);
   });
   const sumPages = Math.ceil(total / limit);
@@ -140,7 +53,7 @@ export default function Brand() {
             {menu.toUpperCase()}
           </div>
           <div className="grid grid-cols-5 gap-4 pt-4 overflow-auto">
-            {pd.map((product, index) => (
+            {data.map((product, index) => (
               <div
                 key={index}
                 className="h-[15vw] text-black border-2 border-purple-500 rounded-xl overflow-hidden"

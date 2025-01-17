@@ -36,6 +36,8 @@ export const loader: LoaderFunction = async ({ params }) => {
 };
 
 export default function Product() {
+  const { data } = useLoaderData<Product>();
+  data.disPrice = data.price * (1 - data.discount / 100);
   const [name, setName] = useState('');
   const [feedback, setFeedback] = useState('');
   return (
@@ -46,22 +48,22 @@ export default function Product() {
         </div>
         <div className="h-[25vw] flex">
           <div className="w-1/2 flex justify-center items-center px-4">
-            <img src="app/IMG/DKKP_00.png" alt="" className="w-full h-5/6 border-2 border-purple-500 rounded-2xl" />
+            <img src={data.img} alt="" className="w-full h-5/6 border-2 border-purple-500 rounded-2xl" />
           </div>
           <div className="w-1/2 flex justify-center items-center px-4">
             <div className="w-full h-5/6 bg-white border-2 border-purple-500 rounded-2xl">
               <div className="h-1/4 flex justify-center items-center">
-                <span className="text-2xl text-purple-500 border-b-2 border-purple-500 p-2">Samsung Galaxy S24</span>
+                <span className="text-2xl text-purple-500 border-b-2 border-purple-500 p-2">{data.name}</span>
               </div>
               <div className="h-1/2 text-purple-500 flex p-4">
-                <button className="h-fit border-2 border-purple-500 rounded-xl p-2 m-2">256GB - Gold</button>
-                <button className="h-fit border-2 border-purple-500 rounded-xl p-2 m-2">256GB - Black</button>
-                <button className="h-fit border-2 border-purple-500 rounded-xl p-2 m-2">512GB - Titanium</button>
+                <button className="h-fit border-2 border-purple-500 rounded-xl p-2 m-2">{data.optionValue}</button>
+                <button className="h-fit border-2 border-purple-500 rounded-xl p-2 m-2">{data.optionValue}</button>
+                <button className="h-fit border-2 border-purple-500 rounded-xl p-2 m-2">{data.optionValue}</button>
               </div>
               <div className="h-1/4 border-t-2 border-dashed border-purple-500 flex justify-center items-center">
                 <div>
-                  <span className="text-3xl text-red-500 px-2">2.000.000</span>
-                  <span className="line-through text-xl text-black px-2">4.000.000</span>
+                  <span className="text-3xl text-red-500 px-2">{data.disPrice}</span>
+                  <span className="line-through text-xl text-black px-2">{data.price}</span>
                 </div>
               </div>
             </div>
@@ -69,7 +71,7 @@ export default function Product() {
         </div>
         <div className="min-h-[25vw] flex">
           <div className="w-3/4 flex justify-center items-center px-4">
-            <div className="w-full h-5/6 text-xl text-purple-500 bg-white border-2 border-purple-500 rounded-2xl p-4">Description</div>
+            <div className="w-full h-5/6 text-xl text-purple-500 bg-white border-2 border-purple-500 rounded-2xl p-4">{data.description}</div>
           </div>
           <div className="w-1/4 flex justify-center items-center px-4">
             <div className="w-full h-5/6 bg-white border-2 border-purple-500 rounded-2xl flex justify-center">
@@ -78,12 +80,12 @@ export default function Product() {
               >
                 <tbody>
                   <tr className="flex">
-                    <td className="border border-purple-500 w-1/2 px-4">RAM</td>
-                    <td className="border border-purple-500 w-1/2 px-4">8GB</td>
+                    <td className="border border-purple-500 w-1/2 px-4">{data.attributeName}</td>
+                    <td className="border border-purple-500 w-1/2 px-4">{data.atrributeValue}</td>
                   </tr>
                   <tr className="flex">
-                    <td className="border border-purple-500 w-1/2 px-4">Storage</td>
-                    <td className="border border-purple-500 w-1/2 px-4">512GB</td>
+                    <td className="border border-purple-500 w-1/2 px-4">{data.attributeName}</td>
+                    <td className="border border-purple-500 w-1/2 px-4">{data.atrributeValue}</td>
                   </tr>
                 </tbody>
               </table>
