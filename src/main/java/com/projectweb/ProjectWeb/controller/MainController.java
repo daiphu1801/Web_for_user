@@ -31,11 +31,14 @@ public class MainController {
     // Endpoint trả về dữ liệu tổng hợp từ tất cả các Service
     @GetMapping("/homepage")
     public MainDTO getAllData() {
+        // Lấy danh sách Brand, Category, Product_Final
         List<Brand_Entity> brands = brandService.getAllBrands();
-        List<Product_Final_Entity> products = productFinalService.getProductsWithHighestDiscount();
         List<Category_Entity> categories = categoryService.getAllCategories();
+        List<Product_Final_Entity> products = productFinalService.getProductsWithHighestDiscount();
         List<Product_Final_Entity> productsAll = productFinalService.getAllProductsFinal();
 
+        // Trả về DTO với các danh sách được tập hợp
         return new MainDTO(brands, categories, products, productsAll);
     }
 }
+
