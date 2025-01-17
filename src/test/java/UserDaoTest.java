@@ -1,5 +1,4 @@
-package com.projectweb.ProjectWeb.dao;
-
+import com.projectweb.ProjectWeb.dao.UserDao;
 import com.projectweb.ProjectWeb.model.User_Entity;
 import com.projectweb.ProjectWeb.service.SecurityFunction;
 import org.junit.jupiter.api.BeforeEach;

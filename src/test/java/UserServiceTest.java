@@ -1,7 +1,10 @@
-package com.projectweb.ProjectWeb.service;
-
 import com.projectweb.ProjectWeb.dao.UserDao;
 import com.projectweb.ProjectWeb.model.User_Entity;
+import com.projectweb.ProjectWeb.service.UserService;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.EntityTransaction;
+import jakarta.persistence.Persistence;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,5 +60,24 @@ public class UserServiceTest {
         User_Entity user = userService.getUsersByID("12345");
         assertNotNull(user);
         assertEquals("test@example.com", user.getEMAIL_ACC());
+    }
+
+    public static void main(String[] args) throws Exception {
+        EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("DKKPPersistenceUnit");
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        EntityTransaction transaction = entityManager.getTransaction();
+        try {
+            transaction.begin();
+            // nhét code vào đây
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction.isActive()) {
+                transaction.rollback();
+            }
+
+        } finally {
+            entityManager.close();
+            entityManagerFactory.close();
+        }
     }
 }

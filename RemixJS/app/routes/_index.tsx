@@ -11,6 +11,17 @@ interface Product {
   disPrice?: number;
 }
 
+// Fetch dữ liệu từ API Spring Boot
+export const loader = async () => {
+  const response = await fetch("http://localhost:8080/index/homepage");
+  if (!response.ok) {
+    throw new Response("Failed to load products", { status: response.status });
+  }
+  const main = await response.json();
+  return JSON(main);
+};
+
+
 export default function Index() {
   const img = [
     "app/IMG/DKKP_00.png",

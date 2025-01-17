@@ -5,146 +5,28 @@ import com.projectweb.ProjectWeb.model.Product_Option_Entity;
 import com.projectweb.ProjectWeb.model.Product_Option_Values_Entity;
 import jakarta.persistence.*;
 import jakarta.persistence.criteria.*;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
+@Repository // Để Spring quản lý bean này
 public class ProductOptionValuesDao {
-    private final EntityManager entityManager;
 
+    @PersistenceContext // Inject EntityManager do Spring quản lý
+    private EntityManager entityManager;
 
-    public ProductOptionValuesDao(EntityManager entityManager) {
-        this.entityManager = entityManager;
-    }
-
-    public EntityManager getEntityManager() {
-        return this.entityManager;
-    }
-
+    @Transactional // Đảm bảo mọi thay đổi được thực hiện trong transaction
     public void createProductOptionValues(Product_Option_Values_Entity optionValue) {
         entityManager.persist(optionValue);
     }
 
-    public boolean updateOptionValue(Integer id,
-                                     String value,
-                                     Integer idOption,
-
-                                     Integer idFinalProduct) {
-        EntityTransaction transaction = entityManager.getTransaction();
-
-        Product_Option_Values_Entity productOption_values_entity = entityManager.find(Product_Option_Values_Entity.class, id);
-        if (productOption_values_entity == null) {
-            return false;
-        }
-        if (value != null) productOption_values_entity.setVALUE(value);
-        if (idOption != null) productOption_values_entity.setID_OPTION(idOption);
-        if (idFinalProduct != null) productOption_values_entity.setID_FINAL_PRODUCT(idFinalProduct);
-        entityManager.merge(productOption_values_entity);
-        transaction.commit();
-        return true;
-    }
-
-    public List<Product_Option_Values_Entity> getFilteredProductOptionValue(Integer id, Integer idOption, String NAME_OPTION, String value, Integer idFinalProduct, String NAME_PRODUCT, String sortField, String sortOrder, Integer offset, Integer setOff) {
-        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Product_Option_Values_Entity> query = cb.createQuery(Product_Option_Values_Entity.class);
-        Root<Product_Option_Values_Entity> root = query.from(Product_Option_Values_Entity.class);
-
-        Join<Product_Option_Values_Entity, Product_Option_Entity> productOptionjoin = root.join("product_options", JoinType.INNER);
-        Join<Product_Option_Values_Entity, Product_Final_Entity> productFinaljoin = root.join("product_final", JoinType.INNER);
-
-        Predicate conditions = cb.conjunction();
-        boolean hasConditions = false;
-        if (id != null) {
-            conditions = cb.and(conditions, cb.equal(root.get("ID"), id));
-            hasConditions = true;
-        }
-        if (idOption != null) {
-            conditions = cb.and(conditions, cb.equal(root.get("ID_OPTION"), idOption));
-            hasConditions = true;
-        }
-        if (NAME_OPTION != null) {
-            conditions = cb.and(conditions, cb.like(productOptionjoin.get("NAME_OPTION"), "%" + NAME_OPTION + "%"));
-            hasConditions = true;
-        }
-
-        if (value != null) {
-            conditions = cb.and(conditions, cb.equal(root.get("VALUE"), value));
-            hasConditions = true;
-        }
-        if (idFinalProduct != null) {
-            conditions = cb.and(conditions, cb.equal(root.get("ID_FINAL_PRODUCT"), idFinalProduct));
-            hasConditions = true;
-        }
-        if (NAME_PRODUCT != null) {
-            conditions = cb.and(conditions, cb.like(productFinaljoin.get("NAME_PRODUCT"), "%" + NAME_PRODUCT + "%"));
-            hasConditions = true;
-        }
-        if (hasConditions) {
-            query.where(conditions);
-        } else {
-            query.select(root);
-        }
-        if (sortField != null && sortOrder != null) {
-            Path<?> sortPath = root.get(sortField.toUpperCase());
-            if ("desc".equalsIgnoreCase(sortOrder)) {
-                query.orderBy(cb.desc(sortPath));
-            } else {
-                query.orderBy(cb.asc(sortPath));
-            }
-        }
-
-        query.select(cb.construct(
-                Product_Option_Values_Entity.class,
-                root.get("ID"),
-                root.get("ID_OPTION"),
-                root.get("VALUE"),
-                root.get("ID_FINAL_PRODUCT"),
-                productOptionjoin.get("NAME_OPTION"),
-                productOptionjoin.get("NAME_PRODUCT")
-        ));
-        TypedQuery<Product_Option_Values_Entity> typedQuery = entityManager.createQuery(query);
-        if (offset != null) typedQuery.setFirstResult(offset);
-        if (setOff != null) typedQuery.setMaxResults(setOff);
-        return typedQuery.getResultList();
-    }
-
-    public void deleteOptionValues(Integer ID, Integer ID_OPTION, Integer ID_FINAL_PRODUCT) {
-        // Bắt đầu xây dựng câu truy vấn
-        StringBuilder queryStr = new StringBuilder("SELECT po FROM Product_Option_Values_Entity po WHERE 1=1");
-        if (ID != null) {
-            queryStr.append(" AND po.ID = :ID");
-        } else if (ID_OPTION != null) {
-            queryStr.append(" AND po.ID_OPTION = :ID_OPTION");
-        } else if (ID_FINAL_PRODUCT != null) {
-            queryStr.append(" AND po.ID_FINAL_PRODUCT = :ID_FINAL_PRODUCT");
-        }
-        var query = entityManager.createQuery(queryStr.toString(), Product_Option_Values_Entity.class);
-        if (ID != null) {
-            query.setParameter("ID", ID);
-        } else if (ID_OPTION != null) {
-            query.setParameter("ID_OPTION", ID_OPTION);
-        } else if (ID_FINAL_PRODUCT != null) {
-            query.setParameter("ID_FINAL_PRODUCT", ID_FINAL_PRODUCT);
-        }
-        List<Product_Option_Values_Entity> optionValues = query.getResultList();
-        if (!optionValues.isEmpty()) {
-            for (Product_Option_Values_Entity optionValue : optionValues) {
-                try {
-                    entityManager.remove(optionValue);
-                } catch (RuntimeException e) {
-                    throw new RuntimeException("Error occurred while deleting Option Value", e);
-                }
-            }
-        } else {
-            throw new RuntimeException("Cannot find Option Values to delete");
-        }
-    }
-
-
+    @Transactional
     public void updateProductOptionValues(Integer id, String value, Integer idOption, Integer idFinalProduct) {
-
         Product_Option_Values_Entity optionValue = entityManager.find(Product_Option_Values_Entity.class, id);
         if (optionValue == null) {
-            throw new RuntimeException("Can not find option value to delete");
+            throw new RuntimeException("Cannot find option value to update with ID: " + id);
         }
         if (value != null) optionValue.setVALUE(value);
         if (idOption != null) optionValue.setID_OPTION(idOption);
@@ -152,5 +34,103 @@ public class ProductOptionValuesDao {
         entityManager.merge(optionValue);
     }
 
+    public List<Product_Option_Values_Entity> getFilteredProductOptionValue(
+            Integer id,
+            Integer idOption,
+            String nameOption,
+            String value,
+            Integer idFinalProduct,
+            String nameProduct,
+            String sortField,
+            String sortOrder,
+            Integer offset,
+            Integer setOff) {
 
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Product_Option_Values_Entity> query = cb.createQuery(Product_Option_Values_Entity.class);
+        Root<Product_Option_Values_Entity> root = query.from(Product_Option_Values_Entity.class);
+
+        Join<Product_Option_Values_Entity, Product_Option_Entity> productOptionJoin = root.join("product_options", JoinType.LEFT);
+        Join<Product_Option_Values_Entity, Product_Final_Entity> productFinalJoin = root.join("product_final", JoinType.LEFT);
+
+        List<Predicate> predicates = new ArrayList<>();
+
+        if (id != null) predicates.add(cb.equal(root.get("ID"), id));
+        if (idOption != null) predicates.add(cb.equal(root.get("ID_OPTION"), idOption));
+        if (nameOption != null) predicates.add(cb.like(productOptionJoin.get("NAME_OPTION"), "%" + nameOption + "%"));
+        if (value != null) predicates.add(cb.equal(root.get("VALUE"), value));
+        if (idFinalProduct != null) predicates.add(cb.equal(root.get("ID_FINAL_PRODUCT"), idFinalProduct));
+        if (nameProduct != null) predicates.add(cb.like(productFinalJoin.get("NAME_PRODUCT"), "%" + nameProduct + "%"));
+
+        query.where(predicates.toArray(new Predicate[0]));
+
+        if (sortField != null && sortOrder != null) {
+            Path<?> sortPath = root.get(sortField);
+            if ("desc".equalsIgnoreCase(sortOrder)) {
+                query.orderBy(cb.desc(sortPath));
+            } else {
+                query.orderBy(cb.asc(sortPath));
+            }
+        }
+
+        TypedQuery<Product_Option_Values_Entity> typedQuery = entityManager.createQuery(query);
+        if (offset != null) typedQuery.setFirstResult(offset);
+        if (setOff != null) typedQuery.setMaxResults(setOff);
+
+        return typedQuery.getResultList();
+    }
+
+    public Integer getFilteredProductOptionValueCount(
+            Integer id,
+            Integer idOption,
+            String nameOption,
+            String value,
+            Integer idFinalProduct,
+            String nameProduct) {
+
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Long> query = cb.createQuery(Long.class);
+        Root<Product_Option_Values_Entity> root = query.from(Product_Option_Values_Entity.class);
+
+        Join<Product_Option_Values_Entity, Product_Option_Entity> productOptionJoin = root.join("product_options", JoinType.LEFT);
+        Join<Product_Option_Values_Entity, Product_Final_Entity> productFinalJoin = root.join("product_final", JoinType.LEFT);
+
+        List<Predicate> predicates = new ArrayList<>();
+
+        if (id != null) predicates.add(cb.equal(root.get("ID"), id));
+        if (idOption != null) predicates.add(cb.equal(root.get("ID_OPTION"), idOption));
+        if (nameOption != null) predicates.add(cb.like(productOptionJoin.get("NAME_OPTION"), "%" + nameOption + "%"));
+        if (value != null) predicates.add(cb.equal(root.get("VALUE"), value));
+        if (idFinalProduct != null) predicates.add(cb.equal(root.get("ID_FINAL_PRODUCT"), idFinalProduct));
+        if (nameProduct != null) predicates.add(cb.like(productFinalJoin.get("NAME_PRODUCT"), "%" + nameProduct + "%"));
+
+        query.where(predicates.toArray(new Predicate[0]));
+        query.select(cb.count(root));
+
+        Long count = entityManager.createQuery(query).getSingleResult();
+        return count != null ? count.intValue() : 0;
+    }
+
+    @Transactional
+    public void deleteOptionValues(Integer id, Integer idOption, Integer idFinalProduct) {
+        StringBuilder queryStr = new StringBuilder("SELECT po FROM Product_Option_Values_Entity po WHERE 1=1");
+        if (id != null) queryStr.append(" AND po.ID = :id");
+        if (idOption != null) queryStr.append(" AND po.ID_OPTION = :idOption");
+        if (idFinalProduct != null) queryStr.append(" AND po.ID_FINAL_PRODUCT = :idFinalProduct");
+
+        TypedQuery<Product_Option_Values_Entity> query = entityManager.createQuery(queryStr.toString(), Product_Option_Values_Entity.class);
+
+        if (id != null) query.setParameter("id", id);
+        if (idOption != null) query.setParameter("idOption", idOption);
+        if (idFinalProduct != null) query.setParameter("idFinalProduct", idFinalProduct);
+
+        List<Product_Option_Values_Entity> optionValues = query.getResultList();
+        if (optionValues.isEmpty()) {
+            throw new RuntimeException("Cannot find Option Values to delete");
+        }
+
+        for (Product_Option_Values_Entity optionValue : optionValues) {
+            entityManager.remove(optionValue);
+        }
+    }
 }

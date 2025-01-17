@@ -1,25 +1,37 @@
 package com.projectweb.ProjectWeb.dao;
 
 import com.projectweb.ProjectWeb.model.Category_Entity;
-import jakarta.persistence.*;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.criteria.*;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Repository
 public class CategoryDao {
-    private final EntityManager entityManager;
 
-    public CategoryDao(EntityManager entityManager) {
-        this.entityManager = entityManager;
+    @PersistenceContext
+    private EntityManager entityManager;
+
+//    public CategoryDao(EntityManager entityManager) {
+//        this.entityManager = entityManager;
+//    }
+
+    public List<Category_Entity> getAllCategories() {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Category_Entity> query = cb.createQuery(Category_Entity.class);
+        Root<Category_Entity> root = query.from(Category_Entity.class);
+        query.select(root); // Lấy tất cả các cột
+        return entityManager.createQuery(query).getResultList();
     }
 
+    @Transactional
     public void createCategory(Category_Entity category) {
         try {
-            entityManager.getTransaction().begin();
             entityManager.persist(category);
-            entityManager.getTransaction().commit();
         } catch (Exception e) {
-            entityManager.getTransaction().rollback();
             throw new RuntimeException("Failed to create category", e);
         }
     }
@@ -55,33 +67,28 @@ public class CategoryDao {
         return entityManager.createQuery(query).getResultList();
     }
 
+    @Transactional
     public void updateCategory(Integer id, String name) {
         try {
-            entityManager.getTransaction().begin();
             Category_Entity category = entityManager.find(Category_Entity.class, id);
             if (category == null) throw new RuntimeException("Category with ID " + id + " not found");
             category.setNAME_CATEGORY(name);
             entityManager.merge(category);
-            entityManager.getTransaction().commit();
         } catch (Exception e) {
-            entityManager.getTransaction().rollback();
             throw new RuntimeException("Failed to update category", e);
         }
     }
 
+    @Transactional
     public void deleteCategoryById(Integer categoryId) {
         try {
-            entityManager.getTransaction().begin();
             Category_Entity categoryToDelete = entityManager.find(Category_Entity.class, categoryId);
             if (categoryToDelete != null) {
                 entityManager.remove(categoryToDelete);
-                entityManager.getTransaction().commit();
             } else {
-                entityManager.getTransaction().rollback();
                 throw new RuntimeException("Category with ID " + categoryId + " not found");
             }
         } catch (Exception e) {
-            entityManager.getTransaction().rollback();
             throw new RuntimeException("Failed to delete category", e);
         }
     }
