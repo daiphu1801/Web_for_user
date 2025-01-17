@@ -3,6 +3,37 @@ import { useState } from "react";
 import { Input } from "../components/ui/input"
 import { Button } from "~/components/ui/button";
 import { Textarea } from "~/components/ui/textarea";
+import { LoaderFunction } from "@remix-run/node";
+import axios from "axios";
+
+interface Product {
+  id: string;
+  img: string;
+  name: string;
+  description: string;
+  optionValue: string;
+  attributeName: string;
+  atrributeValue: string;
+  price: number;
+  discount: number;
+  disPrice?: number;
+}
+
+export const loader: LoaderFunction = async ({ params }) => {
+  try {
+    const { pd } = params;
+    const response = await axios.get<Product>(`http://localhost:8081/dkkp/product.php?id=${pd}`);
+    const data: Product = response.data;
+    return new Response(JSON.stringify(data), {
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (error) {
+    return new Response(
+      JSON.stringify({ error: "Failed To Fetch Data!" }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
+  }
+};
 
 export default function Product() {
   const [name, setName] = useState('');

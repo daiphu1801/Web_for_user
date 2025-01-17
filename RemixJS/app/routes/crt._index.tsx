@@ -1,3 +1,6 @@
+import { ActionFunction } from "@remix-run/node";
+import { Form } from "@remix-run/react";
+import axios from "axios";
 import { useEffect, useState } from "react";
 
 type Product = {
@@ -5,6 +8,23 @@ type Product = {
   price: number;
   quantity: number;
   total: number;
+};
+
+export const action: ActionFunction = async ({ request }) => {
+  try {
+    const formData = new URLSearchParams(await request.text());
+    const cart: Product[] = JSON.parse(formData.get('cart') || '[]');
+    const response = await axios.post("http://localhost:8081/dkkp/cart.php", { products: cart });
+    const data = response.data;
+    return new Response(JSON.stringify(data), {
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (error) {
+    return new Response(
+      JSON.stringify({ error: "Failed To Upload Products!" }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
+  }
 };
 
 export default function Cart() {
@@ -169,7 +189,8 @@ export default function Cart() {
           </div>
         )}
         {cartItems.length > 0 ? (
-          <div className="flex justify-center items-center">
+          <Form method="POST" action="/action" className="flex justify-center items-center">
+            <input type="hidden" name="cart" value={JSON.stringify(cartItems)} />
             <button
               type="submit"
               className={
@@ -179,7 +200,7 @@ export default function Cart() {
             >
               CHECKOUT
             </button>
-          </div>
+          </Form>
         ) : (
           ""
         )}

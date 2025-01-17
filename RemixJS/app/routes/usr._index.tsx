@@ -1,22 +1,44 @@
-import { useNavigate } from "@remix-run/react";
-import { useEffect, useState } from "react";
+import { LoaderFunction } from "@remix-run/node";
+import { useLoaderData, useNavigate } from "@remix-run/react";
+import axios from "axios";
+
+interface userInfo {
+  username: string;
+  email: string;
+  phone: number;
+  address: string;
+}
+
+interface productInfo {
+  name: string;
+  price: number;
+  quantity: number;
+  total: number;
+}
+
+interface MainDTO {
+  userInfo: userInfo;
+  productInfo: productInfo[];
+}
+
+export const loader: LoaderFunction = async () => {
+  try {
+    const response = await axios.get<MainDTO>("http://localhost:8081/dkkp/user.php");
+    const data: MainDTO = response.data;
+    return new Response(JSON.stringify(data), {
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (error) {
+    return new Response(
+      JSON.stringify({ error: "Failed To Fetch Data!" }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
+  }
+};
 
 export default function Account() {
   const navigate = useNavigate();
-  const [userInfo, setUserInfo] = useState<{
-    username: string;
-    email: string;
-    phone: number;
-    address: string;
-  } | null>(null);
-  const [productInfo, setProductInfo] = useState<
-    Array<{
-      name: string | null;
-      price: number | null;
-      quantity: number | null;
-      total: number | null;
-    }>
-  >([]);
+  const { userInfo, productInfo } = useLoaderData<MainDTO>();
   const handleLogout = () => {
     navigate('/login');
   };
@@ -99,7 +121,7 @@ export default function Account() {
                 </tr>
               </thead>
               {productInfo.map((crt, index) => (
-                <tbody key={crt.name}>
+                <tbody key={index}>
                   <tr className="flex">
                     <td className="border border-purple-500 w-[70%] px-4">
                       {crt.name}
